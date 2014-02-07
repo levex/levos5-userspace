@@ -4,11 +4,13 @@
 
 void main(int argc, char *argv[]) {
 	/*printf("There are %d arguments:\n", argc);
-	int i;
+    int i;
 	for(i=0;i<argc; i++)
 		printf("argv[%d]: %s\n", i, argv[i]);*/
 
-	char *loc = argv[1];
+    char *loc = "/proc";
+    if(argv && argc > 1)
+	    loc = argv[1];
 	DIR *fd = opendir(loc);
 	struct dirent *de = 0;
 	while(de = readdir(fd))
