@@ -7,6 +7,7 @@
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #define START_APP(loc) int _pid = 0; \
 		if(_pid = fork()) { \
@@ -45,8 +46,7 @@ void main(int argc, char *argv[]) {
 		printf("LevOS $ ");
 		fgets(buffer, 512, stdin);
 		buffer[strlen(buffer) - 1] = 0;
-		//uint32_t n = strsplit(buffer, ' ');
-		if(!strcmp(buffer, "")) continue;
+        if(!strcmp(buffer, "")) continue;
 		if(!strncmp(buffer, "echo", 4)) {
 			printf("%s\n", buffer + 5);
 			continue;
@@ -69,9 +69,27 @@ void main(int argc, char *argv[]) {
             continue;
         }
 		if(!strncmp(buffer, "cat", 3)) {
-			START_APP("/bin/cat");
-			continue;		
+			int pid;
+            if(pid = fork()) {
+                levos_wait(pid);
+                continue;
+            } else {
+                if(strlen(buffer) < 4)
+                    exit(1);
+                char *args[3];
+                args[0] = "/bin/cat";
+				args[1] = malloc(strlen(buffer) - 4);
+                memcpy(args[1], &buffer[4], strlen(buffer) - 4);
+                args[2] = 0;
+                execve("/bin/cat", args, 0);
+            }
+            continue;		
 		}
+		if(!strncmp(buffer, "wtest", 5)) {
+			int fd = open("/proc/devconf", O_RDONLY);
+			write(fd, &buffer[6], strlen(buffer) - 6);
+			continue;
+		} 
 		if(!strncmp(buffer, "ls", 2)) {
 			int pid = 0;
 			if(pid = fork()) {
